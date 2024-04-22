@@ -6,6 +6,11 @@ app = Flask(__name__)
 # Dictionary to store commands for bots
 commands = {}
 
+@app.route('/initialize/sequence/0', methods=['GET'])
+def initialize_sequence():
+    # You can perform any necessary initialization here
+    return jsonify({"message": "Initialization successful"}), 200
+
 @app.route('/register', methods=['POST'])
 def register_bot():
     bot_id = request.json.get('id')
