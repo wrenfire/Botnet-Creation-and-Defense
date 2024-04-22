@@ -73,7 +73,7 @@ def upload_screenshot():
 
 @app.route('/')
 def home():
-    return "Welcome to the Botnet C&C Server! Name: John Doe"
+    return "Welcome to my COmputer Security Final!"
     
 
 
