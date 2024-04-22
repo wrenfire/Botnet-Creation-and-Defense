@@ -17,6 +17,7 @@ def register_bot():
     if not bot_id:
         return jsonify({"error": "No ID provided"}), 400
     commands[bot_id] = []  # Initialize an empty list for commands
+    print(f"Registered bot: {bot_id}")  # Debug print
     return jsonify({"message": "Bot registered", "id": bot_id}), 200
 
 @app.route('/command/<bot_id>', methods=['POST'])
