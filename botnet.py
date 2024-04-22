@@ -57,7 +57,7 @@ def register_bot(server_url, bot_id):
         print("Registration failed", response.json())
 
 def main():
-    server_url = os.getenv('SERVER_URL', 'http://127.0.0.1:8080')  # Default to local server
+    server_url = os.getenv('SERVER_URL', "http://10.0.2.15:5000")  # Default to local server
     bot_id = "bot1"  # Default bot identifier
     if check_in(server_url):
         try:
