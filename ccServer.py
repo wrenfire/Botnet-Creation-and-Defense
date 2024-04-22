@@ -31,10 +31,13 @@ def add_command(bot_id):
 
 @app.route('/get_commands/<bot_id>', methods=['GET'])
 def get_commands(bot_id):
+    print(f"Fetching commands for bot: {bot_id}")  # Debug print
     if bot_id not in commands:
+        print("Bot not registered")  # Debug print
         return jsonify({"error": "Bot not registered"}), 404
     bot_commands = commands[bot_id]
     return jsonify(bot_commands), 200
+
 
 @app.route('/result/<bot_id>', methods=['POST'])
 def receive_result(bot_id):
